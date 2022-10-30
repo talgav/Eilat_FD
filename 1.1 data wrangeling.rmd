@@ -1,0 +1,55 @@
+---
+title: "1.1 data wrangeling"
+author: "TG"
+date: "2022-10-30"
+output: html_document
+---
+
+
+```{r}
+
+library(tidyverse)
+library(lubridate)
+
+```
+
+# load data
+
+```{r}
+
+Aug_22 <- read_excel("data/Juvies August 2022.xlsx")
+  
+June_22 <- read_excel("data/Juvies June 2022.xlsx")
+   
+March_22 <- read_excel("data/Juvies March 2022.xlsx")
+
+pre_data<- read_csv("data/transects_data_for_analyses_2018-2020.csv")
+```
+
+# start orgenaize
+
+fix date foramt to be uniform
+
+```{r}
+colnames(pre_data)
+
+pre_data<-rename(.data = pre_data,"line"="...1")
+
+pre_data<-pre_data %>% mutate(new_date = case_when(
+  grepl("T00",pre_data$Trip.date)==T ~ymd_hms(pre_data$Trip.date),
+  grepl(" 0:00",pre_data$Trip.date)==T ~dmy_hm(pre_data$Trip.date)))
+
+pre_data$new_date<-ifelse(is.na(pre_data$new_date),as.character(dmy(pre_data$Trip.date)),
+                          as.character(pre_data$new_date))
+
+pre_data$new_date<-ymd(pre_data$new_date)
+
+pre_data<-pre_data %>% relocate(new_date,.after = SiteNo) %>% select(-Trip.date) %>% rename("Trip.date" = "new_date")
+
+```
+
+need to fix in predate:
+
+* trip dates (v)
+* NA coordinates
+

@@ -1,0 +1,178 @@
+,V1,V2,note,defenition
+Cephalopholis.miniata,0.01813,2.98905,mean,T
+Ctenochaetus.striatus,0.037621667,2.995911667,mean,T
+Pseudanthias.taeniatus,0.01886,3,mean,T
+Pseudanthias.heemstrai,0.00933,2.97,bayesian,T
+Pseudanthias.squamipinnis,0.0569,2.65,mean,T
+Sufflamen.albicaudatus,0.0257,2.94,bayesian,T
+Chaetodon.austriacus,0.02291,3.01,bayesian,T
+Genicanthus.caudovittatus,0.02142,3,mean,T
+Gomphosus.caeruleus,0.01452,3,mean,T
+Larabicus.quadrilineatus,0.00977,3.05,bayesian,T
+Pygoplites.diacanthus,0.01638,3,mean,T
+Acanthurus.nigrofuscus,0.038228333,2.994228333,mean,T
+Scarus.niger,0.0183375,3.18199,mean,T
+Epinephelus.fasciatus,0.0161575,2.981665,mean,T
+Heniochus.intermedius,0.005405,3,mean,T
+Pseudocheilinus.evanidus,0.00488,3.51,mean,T
+Paracheilinus.octotaenia,0.00977,3.05,bayesian,T
+Oxycheilinus.digramma,0.0245075,2.96175,mean,T
+Anampses.twistii,0.02146,3,mean,T
+Balistapus.undulatus,0.036733333,3.167,mean,T
+Pomacentrus.trichrourus,0.04203,3,could be wrong,C
+Bryaninops.natans,0.00617,3.08,bayesian,C
+Eviota.guttata,0.00617,3.08,bayesian,C
+Chromis.dimidiata,0.01778,2.99,bayesian,C
+Dascyllus.marginatus,0.0177,3,mean,C
+Amblyglyphidodon.flavilatus,0.02239,2.99,bayesian,C
+Meiacanthus.nigrolineatus,0.020875,3,mean,C
+Cheilodipterus.novemstriatus,0.01096,3.11,bayesian,C
+Cheilodipterus.quinquelineatus,0.014123333,3.037743333,mean,C
+Pseudochromis.springeri,0.01175,3.01,bayesian,C
+Eviota.prasites,0.00617,3.08,bayesian,C
+Amblygobius.hectori,0.00617,3.08,bayesian,C
+Cheilodipterus.lachneri,0.01,3.285923333,mean,C
+Plagiotremus.tapeinosoma,0.004973333,2.96944,mean,C
+Apogon.cyanosoma,0.01318,3.14 ,bayesian,C
+Trimma.avidori,0.00891,3.07,bayesian,C
+Chromis.pelloura,0.01778,2.99 ,bayesian,C
+Cephalopholis.hemistiktos,0.0232,3,mean,T
+Lethrinus.borbonicus,0.133,2.36,mean,T
+Scarus.gibbus,0.01413,3.04,bayesian,T
+Scarus.collana,0.01445,3.04,bayesian,T
+Zebrasoma.xanthurum,0.02344,2.97,bayesian,T
+Fistularia.commersonii,0.004223333,2.846666667,mean,T
+Siganus.argenteus,0.01574,3.084638,mean,T
+Hipposcarus.harid,0.02027,3,mean,T
+Amanses.scopas,0.02188,2.91,bayesian,T
+Chromis.virdis,0.038,2.73,geometric,C
+Gobiodon.citrinus,0.0577,2.43917,mean,C
+Amblyglyphidodon.leucogaster,0.01876,2.978683333,mean,C
+Ostorhinchus.nigrofasciatus,0.010335,3.41697,mean,C
+Eviota.sebreei,0.00617,3.08,bayesian,C
+Synodus.variegatus,0.004838,3.32916,bayesian,C
+Pseudochromis.flavivertex,0.01175,3.01,bayesian,C
+Goby.spp.,0.00617,3.08,bayesian,C
+Coris.caudimacula,0.01,3.06,bayesian,T
+Parupeneus.forsskali,0.01202,3.09,bayesian,T
+Bodianus.anthioides,0.01202,3.06,bayesian,T
+Cheilinus.trilobatus,0.02291,3.023823333,mean,T
+Chaetodon.paucifasciatus,0.02291,3.01,bayesian,T
+Amblyeleotris.steinitzi.,0.00617,3.08,bayesian,C
+Amphiprion.bicinctus,0.02973,3,mean,C
+Corythoichthys.schultzi,0.000605,3,mean,C
+Ecsenius.frontalis,0.00741,3,bayesian,C
+Apolemichthys.xanthotis,0.01751,3,mean,T
+Centropyge.multispinis,0.03020 ,2.89 ,bayesian,T
+Dascyllus.trimaculatus,0.070306667,2.809416667,mean,C
+Thalassoma.rueppellii,0.00977,3.05,bayesian,T
+Scarus.ferrugineus,0.02409,3,mean,T
+Chromis.pembae,0.01778,2.99 ,bayesian,T
+Anampses.lineatus,0.01,3.06 ,bayesian,T
+Sargocentron.diadema,0.021783333,2.996073333,mean,C
+Parapercis.hexophtalma,0.00766,3.15813,mean,C
+Labroides.dimidiatus,0.00592,3.171643333,mean,T
+Parupeneus.cyclostomus,0.016756667,3.036666667,mean,T
+Neopomacentrus.miryae,0.02192,3,mean,C
+Coris.aygula,0.01289,3.162856667,mean,T
+Anampses.meleagrides,0.01,3.06,bayesian,T
+Calotomus.viridescens,0.01995,3.01,bayesian,T
+Scarus.spp.,0.01413,3.04,bayesian,T
+Ecsenius.gravieri,0.00741 ,3.00 ,bayesian,C
+Cheilinus.mentalis,0.0166,2.95,bayesian,T
+Parupeneus.macronema,0.0054,3.34,geometric,T
+Scarus.fuscopurpureus,0.01445,3.04 ,bayesian,T
+Lethrinus.nebulosus,0.03743875,2.87102,mean,T
+Labrid.spp.,NA,NA,check,T
+Pterois.miles,0.01148,3.09,bayesian,T
+Amblygobius.albimaculatus.,0.00891,3.07,bayesian,C
+Cirrhilabrus.rubriventralis,0.0166,2.95,bayesian,T
+Caesio.lunaris,0.0363,2.972,mean,T
+Epinephelus.areolatus,0.03467,2.889686667,mean,T
+Parupeneus.rubescens,0.0114,3.01,mean,T
+Ostracion.cubicus,0.115,2.553745,mean,T
+Siderea.grisea,0.00095,3.1,bayesian,C
+Canthigaster.margaritata,0.01493,3,mean,T
+Stethojulis.interrupta,0.032073333,2.620026667,mean,T
+Siganus.luridus,0.017916,2.949,mean,T
+Heniochus.diphreutes,0.02188,3.02,bayesian,T
+Apogon.fleurieu,0.01288,3.1,bayesian,C
+Antennarius.commerson,0.01995,3.01 ,bayesian,C
+Pseudocheilinus.hexataenia,0.02188,3.038333333,mean,T
+Chaetodon.fasciatus,0.02291,3.01,bayesian,T
+Halichoeres.scapularis,0.01627,3.175,mean,T
+Hologymnosus.annulatus,0.01,3.06 ,bayesian,T
+Trimma.barralli,0.00891,3.07,bayesian,C
+Ecsenius.aroni,0.00741,3,bayesian,C
+Trimma.flavicaudatum,0.00891,3.07,bayesian,C
+Pseudochromis.fridmani,0.00501,3.11 ,bayesian,C
+Thalassoma.lunare,0.024,2.82,geometric,T
+Cheilinus.lunulatus,0.01995,3.00 ,bayesian,T
+Siganus.stellatus,0.0441,2.597,mean,T
+Pseudochromis.olivaceus,0.01175,3.01,bayesian,C
+Chlorurus.sordidus,0.020591667,3.087051667,mean,T
+Variola.louti,0.0138725,3.0545325,mean,T
+Monotaxis.grandoculis,0.03721,2.889038333,mean,T
+Pomacanthus.imperator,0.035013333,2.989333333,mean,T
+Dascyllus.aruanus,0.050402,2.735576,mean,C
+Lethrinus.mahsena,0.014,3.1185,mean,T
+Pleurosicya.micheli,0.00617,3.08,bayesian,C
+Pervagor.randalli,0.02188,2.91,bayesian,T
+Chaetodon.trifascialis,0.03629,2.86354,mean,T
+Gnatholepis.anjerensis,0.00871,3.06,bayesian,C
+Arothron.hispidus,0.065993333,2.712,mean,T
+Cantherhines.dumerili,0.0257,2.91,"could use Woleai Atoll, Yap State, 1991  instead",T
+Lethrinus.obsoletus,0.017843333,3.02161,mean,T
+Plagiotremus.rhinorhynchos,0.00159,3.670545,mean,C
+Zebrasoma.veliferum,0.0339, 2.86,geometric,T
+Tetrosomus.gibbosus,0.2275,2.299105,mean,T
+Sebastapistes.cyanostigma,0.0123,3.02,mean,C
+Gymnothorax.undulatus,0.00164,3,mean,C
+Chromis.flavaxilla,0.01778,2.99,mean,C
+Chaetodon.auriga,0.031533333,2.94081,mean,T
+Epinephelus.tauvina,0.02204,2.9814,mean,T
+Stethojulis.albovittata,0.02595,2.7995,mean,T
+Pterois.radiata,0.01148,3.09,mean,C
+Saurida.gracilis,0.011945,3.0809825,mean,C
+Canthigaster.coronata,0.02818,2.94,mean,T
+Coris.variegata,0.017665,3,mean,T
+Gymnothorax.nudivomer,0.00095,3.1,mean,C
+Chaetodon.larvatus,0.0257,3.1,mean,T
+Cyclichthys.spilostylus,0.0309,2.89,mean,T
+Siphamia.majimai,0.01549,3.07,mean,C
+Corythoichthys.flavofasciatus,0.001065,3,mean,C
+Chromis.weberi,0.03906,3,mean,C
+Atrosalarias.fuscus,0.01491,3.01786,mean,C
+Koumansetta.hectori,0.00617 ,3.08,mean,C
+Aspidontus.tractus,0.00537,3.05,mean,C
+Scolopsis.ghanam,0.0182,2.98,mean,T
+Abudefduf.sexfasciatus,0.02309,3.130985,mean,T
+Gorgasia.sillneri.,0.00102 ,3.06 ,mean,C
+Gobiodon.reticulatus,0.00891,3.07,mean,C
+Mulloidichthys.flavolineatus,0.03232875,2.87403625,mean,T
+Paracirrhites.forsteri.,0.00933,3.08,mean,C
+Cephalopholis.argus,0.012634,3.117308,mean,T
+Myripristis.murdjan,0.024755,3.07525,mean,C
+Priacanthus.hamrur,0.023394,2.82477,mean,C
+Bodianus.diana,0.01202,3.06 ,mean,T
+Hemigymnus.fasciatus,0.023005,3,mean,T
+Istigobius.decoratus,0.02035,2.73174,mean,C
+Sargocentron.caudimaculatum,0.0391,2.941,mean,C
+Scarus.frenatus,0.032,3.06,mean,T
+Cantherhines.pardalis,0.017,3.07,mean,T
+Siganus.rivulatus,0.015,2.982571429,mean,T
+Echeneis.naucrates,0.042923333,2.920263333,mean,T
+Aluterus.scriptus,0.823,1.814,mean,T
+Petroscirtes.mitratus,0.00537,3.05,mean,C
+Stephanolepis.diaspros,0.017533333,3.033666667,mean,T
+Dendrochirus.brachypterus,0.011275,3.268925,mean,C
+Canthigaster.pygmaea,0.02818,2.94,mean,T
+Chromis.ternatensis,0.029485,3.1485,mean,C
+Scarus.psittacus,0.024507143,3.058815714,mean,T
+Pteragogus.cryptus,0.0166,2.95,mean,T
+Apogon.pselion,0.01096,3.11,mean,C
+Macropharyngodon.bipartitus.marisrubri,0.01995,3.01,mean,C
+Gymnothorax.flavimarginatus,4.00E-04,3.35,mean,C
+Cirrhitichthys.oxycephalus,0.023475,3.0585,mean,C
+Pseudanthias.fasciatus,0.00933,2.97,mean,T
+Cheilinus.abudjubbe,0.0195,3,bayesian,T
