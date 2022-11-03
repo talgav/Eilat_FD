@@ -168,15 +168,24 @@ Aug_22<- Aug_22 %>% mutate(observer = case_when(
   Observer == "second" & Letter == "J" ~ `Juveniles Second Observer.x`,
   Observer == "second" & Letter != "J" ~ `Second Observer.x`)) %>% relocate(observer,.after = Date)
 
- 
-#         observer = ifelse(Observer == "first", 
-                           `First Observer.x`, 
-                           `Second Observer.x`),
-         trans_ID = paste(Site,Location.x,Transect,`First Observer.x`,`Second Observer.x`,month,year),
-         ID = paste(Site,Location.x,observer,month,year)
-         ) %>%
-  #remove the observer column (not its name, but whether first/second) and create a column with the number of observers
-  select(-c("Observer")) %>%
+pre_data$Trans_surveyor_id
+
+Aug_22<- Aug_22 %>% mutate(trans_ID = paste(Location.x,
+                                            Site,
+                                            Transect,
+                                            Date,
+                                            `First Observer.x`,
+                                            `Second Observer.x`,
+                                            `Juveniles First Observer.x`,
+                                            `Juveniles Second Observer.x`
+                                            ),
+                           Trans_surveyor_id = paste(Location.x,Site,Transect,Date,observer))
+
+
+# remove the observer column (not its name, but whether first/second) and create a column with the number of observers
+  
+
+select(-c("Observer")) %>%
   group_by(trans_ID) %>%
   mutate(observer_num = ifelse(n_distinct(observer) > 1,
                                "two_observers",
