@@ -18,13 +18,13 @@ library(readxl)
 
 ```{r}
 
-Aug_22 <- read_excel("data/Juvies August 2022.xlsx")
+Aug_22_raw <- read_excel("data/Juvies August 2022.xlsx")
   
 June_22 <- read_excel("data/Juvies June 2022.xlsx")
    
 March_22 <- read_excel("data/Juvies March 2022.xlsx")
 
-pre_data<- read_csv("data/transects_data_for_analyses_2018-2020.csv")
+pre_data_raw<- read_csv("data/transects_data_for_analyses_2018-2020.csv")
 ```
 
 # start orgenaize
@@ -32,7 +32,7 @@ pre_data<- read_csv("data/transects_data_for_analyses_2018-2020.csv")
 fix date foramt to be uniform
 
 ```{r}
-
+pre_data<-pre_data_raw
 
 pre_data<-rename(.data = pre_data,"line"="...1")
 
@@ -51,10 +51,151 @@ pre_data<-pre_data %>% relocate(new_date,.after = SiteNo) %>% select(-Trip.date)
        "Sp_status" = "c_t")
 
 colnames(pre_data)
-colnames(March_22)
 
+
+pre_data <- pre_data %>% mutate(survey_method = rep("Transects"),.after = month)
 
 ```
+
+set Aug to the right format
+
+- cover precentage
+- object sizes
+- transect id
+- only transects
+
+# Aug 22
+
+
+```{r}
+
+Aug_22<-Aug_22_raw
+
+```
+
+## delete unneccery columns
+
+1. remove all duplicated columns with ".y"
+2. calculate objects sizes (A_1,K_1...) and remove the excess columns
+3. substrate %
+4. column order and names
+
+
+```{r}
+
+
+# 1.
+duplicated_col<- grep("\\.y$", colnames(Aug_22), ignore.case = T,value = T)
+
+Aug_22<- Aug_22 %>% select(-duplicated_col)
+
+Aug_22[,70:78] <- lapply(Aug_22[,70:78], as.character)
+Aug_22[,70:78] <- lapply(Aug_22[,70:78], as.numeric)
+
+Aug_22[,70:87][is.na(Aug_22[70:87])] <- 0
+
+#2.
+Aug_22$A1_size <- Aug_22$A1_height *Aug_22$A1_length *Aug_22$A1_width
+Aug_22$A2_size <- Aug_22$A2_height *Aug_22$A2_length *Aug_22$A2_width
+Aug_22$A3_size <- Aug_22$A3_height *Aug_22$A3_length *Aug_22$A3_width
+
+Aug_22$K1_size = Aug_22$K1_height*Aug_22$K1_width*Aug_22$K1_length
+Aug_22$K2_size = Aug_22$K2_height*Aug_22$K2_width*Aug_22$K2_length
+Aug_22$K3_size = Aug_22$K3_height*Aug_22$K3_width*Aug_22$K3_length
+
+Aug_22<- Aug_22 %>% select(-c(70:87))
+
+#3.
+
+per_cover_aug = Aug_22[,c(45:69)]
+
+#there are 2 columns for s( S,s), unite:
+
+per_cover_aug[per_cover_aug=="s"] = "S"  
+
+#count how many times a letter appears in the selected columns:
+per_cover_aug$S <- apply(per_cover_aug, 1, function(x) length(which(x=="S")))
+per_cover_aug$SG <- apply(per_cover_aug, 1, function(x) length(which(x=="SG")))
+per_cover_aug$C <- apply(per_cover_aug, 1, function(x) length(which(x=="C")))
+per_cover_aug$G <- apply(per_cover_aug, 1, function(x) length(which(x=="G")))
+per_cover_aug$B <- apply(per_cover_aug, 1, function(x) length(which(x=="B")))
+per_cover_aug$R <- apply(per_cover_aug, 1, function(x) length(which(x=="R")))
+per_cover_aug$A <- apply(per_cover_aug, 1, function(x) length(which(x=="A")))
+per_cover_aug$SW = NA
+
+per_cover_aug = per_cover_aug %>% mutate(S = (S/25) * 100,
+                                 SG = (SG/25) * 100,
+                                 C = (C/25) * 100,
+                                 G = (G/25) * 100,
+                                 B = (B/25) * 100,
+                                 R = (R/25) * 100,
+                                 A = (A/25) *100)
+
+
+per_cover_aug = per_cover_aug %>% rowwise() %>% mutate(sum_check = sum(S,SG,C,G,B,R,A))
+
+per_cover_aug = per_cover_aug %>% select(c(S,SG,C,G,B,R,A))
+
+per_cover_aug$sum <- rowSums(per_cover_aug)
+
+per_cover_aug <- per_cover_aug %>% mutate(across(c(1:7), ~ replace(.,sum == 0, NA)))
+
+per_cover_aug$sum<-NULL  
+
+
+#bind with data
+Aug_22 = cbind.data.frame(Aug_22,per_cover_aug)
+
+Aug_22<-Aug_22 %>% select(-c(45:69))
+
+
+#4.
+
+Aug_22<-Aug_22 %>% select(-Project,-Country,-SiteID,- Expedition)
+
+
+ Aug_22<- Aug_22 %>% mutate(month = "august",
+         year = "2022",
+         Trans_No = paste(Transect,Letter))
+ 
+Aug_22<- Aug_22 %>% mutate (observer = ifelse(Observer == "first", 
+                           `First Observer.x`, 
+                           `Second Observer.x`))
+
+Aug_22<- Aug_22 %>% mutate(observer = case_when(
+  Observer == "first" & Letter == "J" ~ `Juveniles First Observer.x`,
+  Observer == "first" & Letter != "J" ~ `First Observer.x`,
+  Observer == "second" & Letter == "J" ~ `Juveniles Second Observer.x`,
+  Observer == "second" & Letter != "J" ~ `Second Observer.x`)) %>% relocate(observer,.after = Date)
+
+ 
+#         observer = ifelse(Observer == "first", 
+                           `First Observer.x`, 
+                           `Second Observer.x`),
+         trans_ID = paste(Site,Location.x,Transect,`First Observer.x`,`Second Observer.x`,month,year),
+         ID = paste(Site,Location.x,observer,month,year)
+         ) %>%
+  #remove the observer column (not its name, but whether first/second) and create a column with the number of observers
+  select(-c("Observer")) %>%
+  group_by(trans_ID) %>%
+  mutate(observer_num = ifelse(n_distinct(observer) > 1,
+                               "two_observers",
+                               "one_observer"),
+         Depth = mean(c(`Depth Start`,`Depth End`),na.rm = T)) %>% # Calculate the mean depth between start and end points of the transect
+  ungroup() %>%
+  select(-c("Depth End","Depth Start"))
+
+
+
+Aug_22<-Aug_22 %>% rename("survey_method" = "Method.x",
+                          "Sub_site" = "Site",
+                          "Site_name" = Location.x,
+                          )
+
+```
+
+
+
 
 set March to the right format
 
