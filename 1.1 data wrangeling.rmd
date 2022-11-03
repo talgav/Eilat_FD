@@ -10,6 +10,7 @@ output: html_document
 
 library(tidyverse)
 library(lubridate)
+library(readxl)
 
 ```
 
@@ -31,21 +32,37 @@ pre_data<- read_csv("data/transects_data_for_analyses_2018-2020.csv")
 fix date foramt to be uniform
 
 ```{r}
-colnames(pre_data)
+
 
 pre_data<-rename(.data = pre_data,"line"="...1")
 
 pre_data<-pre_data %>% mutate(new_date = case_when(
-  grepl("T00",pre_data$Trip.date)==T ~ymd_hms(pre_data$Trip.date),
-  grepl(" 0:00",pre_data$Trip.date)==T ~dmy_hm(pre_data$Trip.date)))
+  grepl("T00",pre_data$Trip.date) ==T ~ymd_hms(pre_data$Trip.date),
+  grepl(" 0:00",pre_data$Trip.date) ==T ~dmy_hm(pre_data$Trip.date)))
 
 pre_data$new_date<-ifelse(is.na(pre_data$new_date),as.character(dmy(pre_data$Trip.date)),
                           as.character(pre_data$new_date))
 
 pre_data$new_date<-ymd(pre_data$new_date)
 
-pre_data<-pre_data %>% relocate(new_date,.after = SiteNo) %>% select(-Trip.date) %>% rename("Trip.date" = "new_date")
+pre_data<-pre_data %>% relocate(new_date,.after = SiteNo) %>% select(-Trip.date) %>% rename("Trip_date" = "new_date",                                                                     "Site_name"="SiteNo",                                                                         "Sub_site"= "Site",                                                                           "Trans_type"="Letter",
+       "Trans_surveyor_id"="ID",
+       "Depth" = "Depth.m.",
+       "Sp_status" = "c_t")
 
+colnames(pre_data)
+colnames(March_22)
+
+
+```
+
+set March to the right format
+
+```{r}
+
+colnames(March_22)
+
+March_22<-March_22 %>% select(-"Country",-"Project",-"Expedition",-"Juveniles Second Observer.y")
 ```
 
 need to fix in predate:
