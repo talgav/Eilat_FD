@@ -168,7 +168,7 @@ Aug_22<- Aug_22 %>% mutate(observer = case_when(
   Observer == "second" & Letter == "J" ~ `Juveniles Second Observer.x`,
   Observer == "second" & Letter != "J" ~ `Second Observer.x`)) %>% relocate(observer,.after = Date)
 
-pre_data$Trans_surveyor_id
+
 
 Aug_22<- Aug_22 %>% mutate(trans_ID = paste(Location.x,
                                             Site,
@@ -183,25 +183,87 @@ Aug_22<- Aug_22 %>% mutate(trans_ID = paste(Location.x,
 
 
 # remove the observer column (not its name, but whether first/second) and create a column with the number of observers
-  
 
-select(-c("Observer")) %>%
-  group_by(trans_ID) %>%
-  mutate(observer_num = ifelse(n_distinct(observer) > 1,
+Aug_22<-Aug_22 %>% select(-c(Observer,
+                             `First Observer.x`,
+                             `Second Observer.x`,
+                             `Juveniles First Observer.x`,
+                             `Juveniles Second Observer.x`))  
+
+
+Aug_22<-Aug_22 %>% 
+  group_by(trans_ID,Letter) %>%
+  mutate(observer_num_adults = ifelse(n_distinct(observer) > 1 & Letter !="J" ,
                                "two_observers",
                                "one_observer"),
-         Depth = mean(c(`Depth Start`,`Depth End`),na.rm = T)) %>% # Calculate the mean depth between start and end points of the transect
+         observer_num_juv = ifelse(n_distinct(observer) > 1 & Letter =="J",
+                               "two_observers",
+                               "one_observer"),
+         Depth = mean(c(as.numeric(`Depth Start`),as.numeric(`Depth End`)),na.rm = T)) %>% # Calculate the mean depth between start and end points of the transect
   ungroup() %>%
   select(-c("Depth End","Depth Start"))
 
 
-
 Aug_22<-Aug_22 %>% rename("survey_method" = "Method.x",
                           "Sub_site" = "Site",
-                          "Site_name" = Location.x,
-                          )
+                          "Site_name" = "Location.x",
+                          "Trans_type" = "Letter",
+                          "lat"="Latitude",
+                          "lon" = "Longitude")
+
+Aug_22$line<-seq(1:nrow(Aug_22))
+
+
+Aug_22$meta_to_deployment_id<-NULL
+Aug_22$Comment <-rep(NA)
+
+
+
 
 ```
+
+for now ill remove the species specific columns from pre-data...
+
+```{r}
+
+pre_data<-pre_data %>% select(1:34)
+
+pre_data<-pre_data %>% rename("Date" = "Trip_date",
+                              "observer_num_adults"="observer_num",
+                               "Amount"="Number_Ind")
+
+pre_data$SW<-NULL
+
+
+```
+
+```{r}
+
+which(!colnames(pre_data) %in% colnames(Aug_22))
+
+missing_col<-colnames(Aug_22[,(which(!colnames(Aug_22) %in% colnames(pre_data)))])
+
+pre_data <-cbind(pre_data, setNames( lapply(missing_col, function(x) x=NA), missing_col))
+
+
+which(!colnames(Aug_22) %in% colnames(pre_data))
+
+
+Aug_22<-Aug_22 %>% select(colnames(pre_data))
+
+Aug_22<- Aug_22 %>%
+  relocate(observer_num_juv,.after = observer_num_adults) %>%
+  relocate(Object,.after = Length) %>% 
+  relocate(`Juv Transect`,.after = Transect) %>%
+  relocate(`Time Start`,.after = Depth) %>%
+  relocate(`Time End`,.before = Species) %>% 
+  relocate(A2_size,.after = A1_size) %>%
+  relocate(K3_size,.after = K2_size) %>% 
+  relocate(A3_size,.before = K1_size)
+
+
+```
+
 
 
 
