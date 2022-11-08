@@ -20,9 +20,9 @@ library(readxl)
 
 Aug_22_raw <- read_excel("data/Juvies August 2022.xlsx")
   
-June_22 <- read_excel("data/Juvies June 2022.xlsx")
+June_22_raw <- read_excel("data/Juvies June 2022.xlsx")
    
-March_22 <- read_excel("data/Juvies March 2022.xlsx")
+March_22_raw <- read_excel("data/Juvies March 2022.xlsx")
 
 pre_data_raw<- read_csv("data/transects_data_for_analyses_2018-2020.csv")
 ```
@@ -89,8 +89,8 @@ duplicated_col<- grep("\\.y$", colnames(Aug_22), ignore.case = T,value = T)
 
 Aug_22<- Aug_22 %>% select(-duplicated_col)
 
-Aug_22[,70:78] <- lapply(Aug_22[,70:78], as.character)
-Aug_22[,70:78] <- lapply(Aug_22[,70:78], as.numeric)
+Aug_22[,70:87] <- lapply(Aug_22[,70:87], as.character) #convert all of the A_hight... to numeric
+Aug_22[,70:87] <- lapply(Aug_22[,70:87], as.numeric)
 
 Aug_22[,70:87][is.na(Aug_22[70:87])] <- 0
 
@@ -217,6 +217,40 @@ Aug_22$line<-seq(1:nrow(Aug_22))
 Aug_22$meta_to_deployment_id<-NULL
 Aug_22$Comment <-rep(NA)
 
+Aug_22<- Aug_22 %>% 
+  mutate("Juv_depth_start" = case_when(
+  `Juv Transect`=="A" ~ `A Depth Start`,
+  `Juv Transect`=="B" ~ `B Depth Start`,
+  `Juv Transect`=="C" ~ `C Depth Start`,
+  `Juv Transect`=="D" ~ `D Depth Start`,
+  `Juv Transect`=="E" ~ `E Depth Start`,
+  `Juv Transect`=="F" ~ `F Depth Start`)) %>%
+  mutate("Juv_depth_end" = case_when(
+  `Juv Transect`=="A" ~ `A Depth End`,
+  `Juv Transect`=="B" ~ `B Depth End`,
+  `Juv Transect`=="C" ~ `C Depth End`,
+  `Juv Transect`=="D" ~ `D Depth End`,
+  `Juv Transect`=="E" ~ `E Depth End`,
+  `Juv Transect`=="F" ~ `F Depth End`)) %>% 
+  mutate("Juv_time_start" = case_when(
+  `Juv Transect`=="A" ~ `A Time Start`,
+  `Juv Transect`=="B" ~ `B Time Start`,
+  `Juv Transect`=="C" ~ `C Time Start`,
+  `Juv Transect`=="D" ~ `D Time Start`,
+  `Juv Transect`=="E" ~ `E Time Start`,
+  `Juv Transect`=="F" ~ `F Time Start`)) %>% 
+  mutate("Juv_time_end" = case_when(
+  `Juv Transect`=="A" ~ `A Time End`,
+  `Juv Transect`=="B" ~ `B Time End`,
+  `Juv Transect`=="C" ~ `C Time End`,
+  `Juv Transect`=="D" ~ `D Time End`,
+  `Juv Transect`=="E" ~ `E Time End`,
+  `Juv Transect`=="F" ~ `F Time End`)) %>% select(-(8:31)) 
+
+
+Aug_22<-Aug_22 %>% group_by(trans_ID,Trans_type) %>% 
+  mutate(Depth_juv = mean(c(as.numeric(Juv_depth_start),as.numeric(Juv_depth_end)),na.rm = T)) %>% ungroup() %>% select(-Juv_depth_start,-Juv_depth_end)
+
 
 
 
@@ -230,9 +264,19 @@ pre_data<-pre_data %>% select(1:34)
 
 pre_data<-pre_data %>% rename("Date" = "Trip_date",
                               "observer_num_adults"="observer_num",
-                               "Amount"="Number_Ind")
+                              "Amount"="Number_Ind")
 
 pre_data$SW<-NULL
+pre_data$Trans_No<-NULL
+pre_data$Comment<-NULL
+
+
+pre_data$sum <- rowSums(pre_data[21:27])
+
+
+pre_data <- pre_data %>% mutate(across(c(21:27), ~ replace(.,sum == 0, NA)))
+
+pre_data$sum<-NULL
 
 
 ```
@@ -259,23 +303,263 @@ Aug_22<- Aug_22 %>%
   relocate(`Time End`,.before = Species) %>% 
   relocate(A2_size,.after = A1_size) %>%
   relocate(K3_size,.after = K2_size) %>% 
-  relocate(A3_size,.before = K1_size)
+  relocate(A3_size,.before = K1_size) 
 
+Aug_22<-Aug_22 %>% relocate(46:48,.after = 21)
+Aug_22<-Aug_22 %>% relocate(46:47,.after = 36)
 
+Aug_22<-Aug_22 %>% relocate(Notes,.after = Description)
+
+pre_data<-pre_data %>% select(colnames(Aug_22))
 ```
 
-
-
-
-
-set March to the right format
+bind Aug to the previous data
 
 ```{r}
 
-colnames(March_22)
-
-March_22<-March_22 %>% select(-"Country",-"Project",-"Expedition",-"Juveniles Second Observer.y")
+Full_data<-rbind(Aug_22,pre_data)
+Full_data$Comment<-NULL
+Full_data$Trans_No<-NULL
 ```
+
+ill first bind March and June  and then shape them together to fit the other data
+
+```{r}
+
+June_22<- June_22_raw
+March_22<-March_22_raw
+
+colnames(March_22[,(which(!colnames(March_22) %in% colnames(June_22)))])# check which columns not consistent  
+colnames(June_22[,(which(!colnames(June_22) %in% colnames(March_22)))]) # check which columns not consistent  
+
+June_22<-June_22 %>%
+  select(-Method.y,-Location.y) %>% 
+  rename("Location"="Location.x",
+         "Method"="Method.x")
+
+March_22$Method = rep("Transects")
+
+
+
+March_22 <- March_22 %>% select(colnames(June_22)) # make column in the same order
+
+June_march<- rbind(June_22,March_22)
+
+
+```
+
+ill repeat more or less the steps of Aug here...
+
+```{r}
+
+duplicated_col<- grep("\\.y$", colnames(June_march), ignore.case = T,value = T)
+
+June_march<- June_march %>% select(-duplicated_col,-(92:109))
+
+June_march[,57:74] <- lapply(June_march[,57:74], as.character)
+June_march[,57:74] <- lapply(June_march[,57:74], as.numeric)
+
+June_march[,57:74][is.na(June_march[57:74])] <- 0
+
+#2.
+June_march$A1_size <- June_march$A1_height *June_march$A1_length *June_march$A1_width
+June_march$A2_size <- June_march$A2_height *June_march$A2_length *June_march$A2_width
+June_march$A3_size <- June_march$A3_height *June_march$A3_length *June_march$A3_width
+
+June_march$K1_size = June_march$K1_height*June_march$K1_width*June_march$K1_length
+June_march$K2_size = June_march$K2_height*June_march$K2_width*June_march$K2_length
+June_march$K3_size = June_march$K3_height*June_march$K3_width*June_march$K3_length
+
+
+June_march$K1_size[June_march$K1_size==245000]<-0.245 # DATA WAS INPUR IN CM NOT IN M - FIX
+
+June_march<- June_march %>% select(-c(57:74))
+
+#3. calculate cover
+
+per_cover_JM = June_march[,c(32:56)]
+
+#there are 2 columns for s( S,s), unite:
+
+per_cover_JM[per_cover_JM=="s"] = "S"  
+
+#count how many times a letter appears in the selected columns:
+per_cover_JM$S <- apply(per_cover_JM, 1, function(x) length(which(x=="S")))
+per_cover_JM$SG <- apply(per_cover_JM, 1, function(x) length(which(x=="SG")))
+per_cover_JM$C <- apply(per_cover_JM, 1, function(x) length(which(x=="C")))
+per_cover_JM$G <- apply(per_cover_JM, 1, function(x) length(which(x=="G")))
+per_cover_JM$B <- apply(per_cover_JM, 1, function(x) length(which(x=="B")))
+per_cover_JM$R <- apply(per_cover_JM, 1, function(x) length(which(x=="R")))
+per_cover_JM$A <- apply(per_cover_JM, 1, function(x) length(which(x=="A")))
+per_cover_JM$SW = NA
+
+per_cover_JM = per_cover_JM %>% mutate(S = (S/25) * 100,
+                                 SG = (SG/25) * 100,
+                                 C = (C/25) * 100,
+                                 G = (G/25) * 100,
+                                 B = (B/25) * 100,
+                                 R = (R/25) * 100,
+                                 A = (A/25) *100)
+
+
+per_cover_JM = per_cover_JM %>% rowwise() %>% mutate(sum_check = sum(S,SG,C,G,B,R,A))
+
+per_cover_JM = per_cover_JM %>% select(c(S,SG,C,G,B,R,A))
+
+per_cover_JM$sum <- rowSums(per_cover_JM)
+
+per_cover_JM <- per_cover_JM %>% mutate(across(c(1:7), ~ replace(.,sum == 0, NA)))
+
+per_cover_JM$sum<-NULL  
+
+
+#bind with data
+June_march = cbind.data.frame(June_march,per_cover_JM)
+
+June_march<-June_march %>% select(-c(32:56))
+
+
+#4.
+
+June_march<-June_march %>% select(-Project,-Country,-SiteID,- Expedition)
+
+month(June_22_raw$Date[1])
+
+June_march<- June_march %>% mutate(month = case_when(
+  month(Date)==6 ~ "june",
+  month(Date)==3 ~ "march",
+  month(Date)==7 ~ "july"),
+         year = "2022",
+         Trans_No = paste(Transect,Letter))
+ 
+June_march<- June_march %>% mutate (observer = ifelse(Observer == "first", 
+                           `First Observer.x`, 
+                           `Second Observer.x`))
+
+June_march<- June_march %>% mutate(observer = case_when(
+  Observer == "first" & Letter == "J" ~ `Juveniles First Observer.x`,
+  Observer == "first" & Letter != "J" ~ `First Observer.x`,
+  Observer == "second" & Letter == "J" ~ `Juveniles Second Observer.x`,
+  Observer == "second" & Letter != "J" ~ `Second Observer.x`)) %>% relocate(observer,.after = Date)
+
+
+
+June_march<- June_march %>% mutate(trans_ID = paste(Location,
+                                            Site,
+                                            Transect,
+                                            Date,
+                                            `First Observer.x`,
+                                            `Second Observer.x`,
+                                            `Juveniles First Observer.x`,
+                                            `Juveniles Second Observer.x`
+                                            ),
+                           Trans_surveyor_id = paste(Location,Site,Transect,Date,observer))
+
+
+# remove the observer column (not its name, but whether first/second) and create a column with the number of observers
+
+June_march<-June_march %>% select(-c(Observer,
+                             `First Observer.x`,
+                             `Second Observer.x`,
+                             `Juveniles First Observer.x`,
+                             `Juveniles Second Observer.x`))  
+
+
+June_march<-June_march %>% 
+  group_by(trans_ID,Letter) %>%
+  mutate(observer_num_adults = ifelse(n_distinct(observer) > 1 & Letter !="J" ,
+                               "two_observers",
+                               "one_observer"),
+         observer_num_juv = ifelse(n_distinct(observer) > 1 & Letter =="J",
+                               "two_observers",
+                               "one_observer"),
+         Depth = mean(c(as.numeric(`Depth Start`),as.numeric(`Depth End`)),na.rm = T)) %>% # Calculate the mean depth between start and end points of the transect
+  ungroup() %>%
+  select(-c("Depth End","Depth Start"))
+
+
+June_march<-June_march %>% rename("survey_method" = "Method",
+                          "Sub_site" = "Site",
+                          "Site_name" = "Location",
+                          "Trans_type" = "Letter",
+                          "lat"="Latitude",
+                          "lon" = "Longitude")
+
+June_march$line<-seq(1:nrow(June_march))
+
+
+June_march$meta_to_deployment_id<-NULL
+
+
+June_march<- June_march %>% 
+  mutate("Juv_depth_start" = case_when(
+  `Juv Transect`=="A" ~ `A Depth Start`,
+  `Juv Transect`=="B" ~ `B Depth Start`,
+  `Juv Transect`=="C" ~ `C Depth Start`)) %>%
+  mutate("Juv_depth_end" = case_when(
+  `Juv Transect`=="A" ~ `A Depth End`,
+  `Juv Transect`=="B" ~ `B Depth End`,
+  `Juv Transect`=="C" ~ `C Depth End`)) %>% 
+  mutate("Juv_time_start" = case_when(
+  `Juv Transect`=="A" ~ `A Time Start`,
+  `Juv Transect`=="B" ~ `B Time Start`,
+  `Juv Transect`=="C" ~ `C Time Start`)) %>% 
+  mutate("Juv_time_end" = case_when(
+  `Juv Transect`=="A" ~ `A Time End`,
+  `Juv Transect`=="B" ~ `B Time End`,
+  `Juv Transect`=="C" ~ `C Time End`,
+  )) %>% select(-(7:18)) 
+
+
+June_march<-June_march %>% group_by(trans_ID,Trans_type) %>% 
+  mutate(Depth_juv = mean(c(as.numeric(Juv_depth_start),as.numeric(Juv_depth_end)),na.rm = T)) %>% ungroup() %>% select(-Juv_depth_start,-Juv_depth_end)
+
+
+```
+
+```{r}
+which(!colnames(Full_data) %in% colnames(June_march))
+which(!colnames(June_march) %in% colnames(Full_data))
+
+June_march$Comment<-NULL
+June_march$Trans_No<-NULL
+June_march$Habitat<-rep(NA)
+
+
+June_march <- June_march %>% select(colnames(Full_data)) # make column in the same order
+
+Full_data<- rbind(Full_data,June_march)
+
+```
+
+```{r}
+
+Full_data$line<-NULL
+Full_data<-Full_data %>% rename('juv_sub_transect'=`Juv Transect`)
+Full_data<-Full_data %>% arrange(desc(Date),Site_name)
+
+rm(list=setdiff(ls(), "Full_data"))
+```
+
+
+check foe missing coorinadtes,
+in cryptic there is no cordinates yet so ill check for J or T
+
+
+```{r}
+
+Full_data$lat[Full_data$Site_name=="Igloo"] <-29.503679
+Full_data$lon[Full_data$Site_name=="Igloo"] <-34.919032
+
+Full_data$lat[Full_data$trans_ID =="Princess 4 A 2022-07-01 Tal Gavriel Avery Deveto Mai Lazarus Blank"] <-29.494216
+Full_data$lon[Full_data$trans_ID =="Princess 4 A 2022-07-01 Tal Gavriel Avery Deveto Mai Lazarus Blank"] <-34.906752
+
+coord_check<-Full_data %>% filter(Trans_type != "C",is.na(lat)) %>% distinct(Trans_surveyor_id,.keep_all = T)
+
+
+```
+
+34.919032
 
 need to fix in predate:
 
