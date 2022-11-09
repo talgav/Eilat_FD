@@ -11,6 +11,7 @@ output: html_document
 library(tidyverse)
 library(lubridate)
 library(readxl)
+library(rfishbase)
 
 ```
 
@@ -89,10 +90,10 @@ duplicated_col<- grep("\\.y$", colnames(Aug_22), ignore.case = T,value = T)
 
 Aug_22<- Aug_22 %>% select(-duplicated_col)
 
-Aug_22[,70:87] <- lapply(Aug_22[,70:87], as.character) #convert all of the A_hight... to numeric
-Aug_22[,70:87] <- lapply(Aug_22[,70:87], as.numeric)
+Aug_22[,49:66] <- lapply(Aug_22[,49:66], as.character) #convert all of the A_hight... to numeric
+Aug_22[,49:66] <- lapply(Aug_22[,49:66], as.numeric)
 
-Aug_22[,70:87][is.na(Aug_22[70:87])] <- 0
+Aug_22[,49:66][is.na(Aug_22[49:66])] <- 0
 
 #2.
 Aug_22$A1_size <- Aug_22$A1_height *Aug_22$A1_length *Aug_22$A1_width
@@ -103,11 +104,11 @@ Aug_22$K1_size = Aug_22$K1_height*Aug_22$K1_width*Aug_22$K1_length
 Aug_22$K2_size = Aug_22$K2_height*Aug_22$K2_width*Aug_22$K2_length
 Aug_22$K3_size = Aug_22$K3_height*Aug_22$K3_width*Aug_22$K3_length
 
-Aug_22<- Aug_22 %>% select(-c(70:87))
+Aug_22<- Aug_22 %>% select(-c(49:66))
 
 #3.
 
-per_cover_aug = Aug_22[,c(45:69)]
+per_cover_aug = Aug_22[,c(24:48)]
 
 #there are 2 columns for s( S,s), unite:
 
@@ -146,7 +147,7 @@ per_cover_aug$sum<-NULL
 #bind with data
 Aug_22 = cbind.data.frame(Aug_22,per_cover_aug)
 
-Aug_22<-Aug_22 %>% select(-c(45:69))
+Aug_22<-Aug_22 %>% select(-c(24:48))
 
 
 #4.
@@ -245,7 +246,7 @@ Aug_22<- Aug_22 %>%
   `Juv Transect`=="C" ~ `C Time End`,
   `Juv Transect`=="D" ~ `D Time End`,
   `Juv Transect`=="E" ~ `E Time End`,
-  `Juv Transect`=="F" ~ `F Time End`)) %>% select(-(8:31)) 
+  `Juv Transect`=="F" ~ `F Time End`)) %>% select(-(22:45)) 
 
 
 Aug_22<-Aug_22 %>% group_by(trans_ID,Trans_type) %>% 
@@ -306,6 +307,7 @@ Aug_22<- Aug_22 %>%
   relocate(A3_size,.before = K1_size) 
 
 Aug_22<-Aug_22 %>% relocate(46:48,.after = 21)
+
 Aug_22<-Aug_22 %>% relocate(46:47,.after = 36)
 
 Aug_22<-Aug_22 %>% relocate(Notes,.after = Description)
@@ -548,21 +550,122 @@ in cryptic there is no cordinates yet so ill check for J or T
 
 ```{r}
 
+coord_check<-Full_data %>% filter(Trans_type != "C",is.na(lat)) %>% distinct(trans_ID,.keep_all = T)
+
 Full_data$lat[Full_data$Site_name=="Igloo"] <-29.503679
 Full_data$lon[Full_data$Site_name=="Igloo"] <-34.919032
 
 Full_data$lat[Full_data$trans_ID =="Princess 4 A 2022-07-01 Tal Gavriel Avery Deveto Mai Lazarus Blank"] <-29.494216
 Full_data$lon[Full_data$trans_ID =="Princess 4 A 2022-07-01 Tal Gavriel Avery Deveto Mai Lazarus Blank"] <-34.906752
 
-coord_check<-Full_data %>% filter(Trans_type != "C",is.na(lat)) %>% distinct(Trans_surveyor_id,.keep_all = T)
+Full_data$lat[Full_data$trans_ID =="IUI 1 A Tal Perevolotsky Sarah Ohayon october 2020"] <-29.500750
+Full_data$lon[Full_data$trans_ID =="IUI 1 A Tal Perevolotsky Sarah Ohayon october 2020"] <-34.916592
+
+Full_data$lat[Full_data$trans_ID =="IUI 1 B Tal Perevolotsky Sarah Ohayon october 2020"] <-29.500816
+Full_data$lon[Full_data$trans_ID =="IUI 1 B Tal Perevolotsky Sarah Ohayon october 2020"] <-34.916528
+
+Full_data$lat[Full_data$trans_ID =="IUI 1 C Tal Perevolotsky Sarah Ohayon october 2020"] <-29.500816
+Full_data$lon[Full_data$trans_ID =="IUI 1 C Tal Perevolotsky Sarah Ohayon october 2020"] <-34.916528
+
+Full_data$lat[Full_data$trans_ID =="Caves 1 B Shevy Rothman Hava Wandel october 2020"] <-29.497676
+Full_data$lon[Full_data$trans_ID =="Caves 1 B Shevy Rothman Hava Wandel october 2020"] <-34.914081
+
+Full_data$lat[Full_data$trans_ID =="Dekel 2 B Shevy Rothman Yamit Romano october 2020"] <-29.540998
+Full_data$lon[Full_data$trans_ID =="Dekel 2 B Shevy Rothman Yamit Romano october 2020"] <-34.948445
+
+Full_data$lat[Full_data$trans_ID =="Princess 1 A Tal Perevolotsky Yamit Romano october 2020"] <-29.495582
+Full_data$lon[Full_data$trans_ID =="Princess 1 A Tal Perevolotsky Yamit Romano october 2020"] <-34.908574
+
+Full_data$lat[Full_data$trans_ID =="Princess 1 B Tal Perevolotsky Yamit Romano october 2020"] <-29.495582
+Full_data$lon[Full_data$trans_ID =="Princess 1 B Tal Perevolotsky Yamit Romano october 2020"] <-34.908574
+
+Full_data$lat[Full_data$trans_ID =="japanease_gardens 22 Shira Salingre Shahar Chaikin december 2019"] <- 100 # NEED TO CHECK WITH SHACHAR/SHIRA
+Full_data$lon[Full_data$trans_ID =="japanease_gardens 22 Shira Salingre Shahar Chaikin december 2019"] <-100
+
+Full_data$lat[Full_data$trans_ID =="reserve 18 Shira Salingre Shahar Chaikin december 2019"] <-100# NEED TO CHECK WITH SHACHAR/SHIRA
+Full_data$lon[Full_data$trans_ID =="reserve 18 Shira Salingre Shahar Chaikin december 2019
+"] <-100
+
+Full_data$Depth[Full_data$trans_ID=="Princess 1 A Tal Perevolotsky Yamit Romano october 2020"]<-16
+
+
+coord_check<-Full_data %>% filter(Trans_type != "C",is.na(lat)) %>% distinct(trans_ID,.keep_all = T)
+
+rm(coord_check)
+
 
 
 ```
 
-34.919032
+Make the coordinates,depth,and other variables to extent from T to C in the same transect
 
-need to fix in predate:
 
-* trip dates (v)
-* NA coordinates
+```{r}
+
+
+Full_data$adults<- ifelse(Full_data$Trans_type=="J","juv","adu")
+
+Full_data$Trans_type<-as.factor(Full_data$Trans_type)
+
+Full_data$Trans_type<-ordered(Full_data$Trans_type,c("J","T","C"))
+
+Full_data<-Full_data %>% group_by(trans_ID,adults) %>% arrange(desc(Date),Site_name,trans_ID,Trans_type) %>%  fill(lat,lon,Depth,28:34,Description,Photos,Logger,Habitat,Notes,.direction = "down") %>% ungroup()
+
+Full_data<-Full_data %>%
+  relocate("Species",.before = "Amount") %>%
+  relocate("Confidence",.after = "Length")
+```
+
+
+Unite depth and juv depth to one column
+
+
+```{r}
+Full_data <-Full_data %>% mutate(Depth =coalesce(Depth,Depth_juv),
+                               `Time Start` = coalesce(`Time Start`,Juv_time_start),
+                               `Time End` = coalesce(`Time End`,Juv_time_end))         
+
+Full_data<- Full_data %>% select(-Juv_time_start,-Juv_time_end,-Depth_juv,-adults) %>% 
+  rename("Time_start"=`Time Start`,
+         "Time_end" = `Time End`)
+
+Full_data<-Full_data %>% relocate(Habitat,.after = K3_size)
+
+
+```
+
+
+set the depth of the igloo and knolls
+
+```{r}
+
+Full_data$Depth[Full_data$Site_name=="Igloo"]<-10.5
+
+Full_data$Depth[Full_data$trans_ID=="Princess 4 A 2022-07-01 Tal Gavriel Avery Deveto Mai Lazarus Blank"]<-4.3
+
+```
+
+oct_2020_data$Species[oct_2020_data$Species == "Zebrasoma veliferum"] = "Zebrasoma desjardinii"
+oct_2020_data$Species[oct_2020_data$Species == "Coryphopterus neophytus"] = "Fusigobios neophytus"
+oct_2020_data$Species[oct_2020_data$Species == "Amblygobius hectori"] = "Koumansetta hectori"
+oct_2020_data$Species[oct_2020_data$Species == "Pomacentrus trichourus"] = "Pomacentrus trichrourus" 
+
+
+start validateing the species names
+
+1. validate and change to fishbase most updated names
+2. fix spelling mistakes
+3. change species that with mistaken id (due to range for example)
+4. recheck validated
+
+```{r}
+
+uniqe_sp<-unique(Full_data$Species)
+
+v_names<-validate_names(uniqe_sp)
+
+uniqe_sp<-as.data.frame(cbind(uniqe_sp,v_names))
+
+```
+
 
