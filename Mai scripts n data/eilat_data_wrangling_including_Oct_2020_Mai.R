@@ -35,6 +35,8 @@ list_of_sp_for_wrangling = union(oct_2020_sp,sp_2018_2020)
 #4. Pomacentrus trichourus -> Pomacentrus trichrourus
 #Since there's a lot of species-related wrangling, I am changing these names in both data 
 #already at this point:
+
+
 oct_2020_data$Species[oct_2020_data$Species == "Zebrasoma veliferum"] = "Zebrasoma desjardinii"
 oct_2020_data$Species[oct_2020_data$Species == "Coryphopterus neophytus"] = "Fusigobios neophytus"
 oct_2020_data$Species[oct_2020_data$Species == "Amblygobius hectori"] = "Koumansetta hectori"
