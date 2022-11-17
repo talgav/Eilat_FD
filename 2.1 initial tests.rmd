@@ -1,0 +1,51 @@
+---
+title: "2.1 initial tests"
+author: "TG"
+date: "2022-11-14"
+output:
+   prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+---
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(sf)
+library(leaflet)
+
+```
+
+```{r}
+load("Full_data.RData")
+
+```
+
+
+First lets create filtered data
+
+
+```{r}
+
+Adult_data<- Full_data %>% filter(Trans_type!= "J", survey_method == "Transects") %>% select(-juv_sub_transect,-observer_num_juv,-survey_method)
+
+```
+
+data for test map - keep unique sample id only
+
+```{r}
+
+map_data<-Adult_data %>% distinct(trans_ID,.keep_all = T)
+
+map_data$lat<-as.numeric(map_data$lat)
+map_data$lon<-as.numeric(map_data$lon)
+
+
+
+leaflet(map_data) %>% 
+  addTiles() %>% 
+  addAwesomeMarkers(lng = ~lon, lat = ~lat,label  = ~ trans_ID)
+```
+
+
+

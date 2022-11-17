@@ -542,8 +542,181 @@ rm(list=setdiff(ls(), "Full_data"))
 ```
 
 
-check foe missing coorinadtes,
-in cryptic there is no cordinates yet so ill check for J or T
+
+Upload knolls data:
+
+```{r}
+raw_knolls_march <- read_excel("data/Knolls March Juvies 2022.xlsx")
+raw_knolls_june <- read_excel("data/Juvies June 2022 knolls.xlsx")
+raw_knolls_aug <- read_excel("data/Juvies Knolls August 2022.xlsx")
+
+knolls_march<-raw_knolls_march
+knolls_june<-raw_knolls_june
+knolls_aug<-raw_knolls_aug
+
+```
+
+For some reason in august 2022 all adults data is NA in transect type, ill change it mannualy here.
+
+```{r}
+knolls_aug$Letter[is.na(knolls_aug$Letter)]<-"T"
+```
+
+
+join aug and june
+
+```{r}
+
+which(!colnames(knolls_june) %in% colnames(knolls_aug))
+colnames(knolls_aug)[which(!colnames(knolls_aug) %in% colnames(knolls_june))]
+
+
+
+missing_col<-colnames(knolls_aug)[which(!colnames(knolls_aug) %in% colnames(knolls_june))]
+
+knolls_june <-cbind(knolls_june, setNames( lapply(missing_col, function(x) x=NA), missing_col))
+
+
+knolls_june<-knolls_june %>% select(colnames(knolls_aug))
+
+knolls<-bind_rows(knolls_aug,knolls_june)
+
+
+```
+
+join march:
+
+```{r}
+which(!colnames(knolls_march) %in% colnames(knolls))
+which(!colnames(knolls) %in% colnames(knolls_march))
+
+knolls_march<-knolls_march %>% select(colnames(knolls))
+
+knolls<-bind_rows(knolls,knolls_march)
+
+```
+
+mutate all knolls data:
+
+```{r}
+duplicated_col<- grep("\\.y$", colnames(knolls), ignore.case = T,value = T)
+
+knolls<- knolls %>% select(-duplicated_col)
+
+knolls<- knolls %>% select(-c(45:87)) # remove 0 - 25 and A_hight...k_width
+
+
+knolls<-knolls %>% select(-Project,-Country,-SiteID,- Expedition)
+
+knolls<- knolls %>% mutate(month = case_when(
+  month(Date)==6 ~ "june",
+  month(Date)==3 ~ "march",
+  month(Date)==7 ~ "july",
+  month(Date)==8 ~ "august"),
+         year = "2022",
+         Trans_No = paste(Transect,Letter))
+ 
+knolls<- knolls %>% mutate (observer = ifelse(Observer == "first", 
+                           `First Observer.x`, 
+                           `Second Observer.x`))
+
+knolls<- knolls %>% mutate(observer = case_when(
+  Observer == "first" & Letter == "J" ~ `Juveniles First Observer.x`,
+  Observer == "first" & Letter != "J" ~ `First Observer.x`,
+  Observer == "second" & Letter == "J" ~ `Juveniles Second Observer.x`,
+  Observer == "second" & Letter != "J" ~ `Second Observer.x`)) %>% relocate(observer,.after = Date)
+
+
+
+knolls<- knolls %>% mutate(trans_ID = paste(Location.x,
+                                            Site,
+                                            Transect,
+                                            Date,
+                                            `First Observer.x`,
+                                            `Second Observer.x`,
+                                            `Juveniles First Observer.x`,
+                                            `Juveniles Second Observer.x`
+                                            ),
+                           Trans_surveyor_id = paste(Location.x,Site,Transect,Date,observer))
+
+
+# remove the observer column (not its name, but whether first/second) and create a column with the number of observers
+
+knolls<-knolls %>% select(-c(Observer,
+                             `First Observer.x`,
+                             `Second Observer.x`,
+                             `Juveniles First Observer.x`,
+                             `Juveniles Second Observer.x`))  
+
+
+knolls<-knolls %>% 
+  group_by(trans_ID,Letter) %>%
+  mutate(observer_num_adults = ifelse(n_distinct(observer) > 1 & Letter !="J" ,
+                               "two_observers",
+                               "one_observer"),
+         observer_num_juv = ifelse(n_distinct(observer) > 1 & Letter =="J",
+                               "two_observers",
+                               "one_observer"),
+         Depth = mean(c(as.numeric(`Depth Start`),as.numeric(`Depth End`)),na.rm = T)) %>% # Calculate the mean depth between start and end points of the transect
+  ungroup() %>%
+  select(-c("Depth End","Depth Start"))
+
+
+knolls<-knolls %>% rename("survey_method" = "Method.x",
+                          "Sub_site" = "Site",
+                          "Site_name" = "Location.x",
+                          "Trans_type" = "Letter",
+                          "lat"="Latitude",
+                          "lon" = "Longitude")
+
+
+knolls<-knolls %>% select(-c(13:32))
+
+ 
+
+knolls<- knolls %>% 
+  mutate("Juv_depth_start" = case_when(
+  `Juv Transect`=="A" ~ `A Depth Start`)) %>%
+  mutate("Juv_depth_end" = case_when(
+  `Juv Transect`=="A" ~ `A Depth End`)) %>% 
+  mutate("Juv_time_start" = case_when(
+  `Juv Transect`=="A" ~ `A Time Start`)) %>% 
+  mutate("Juv_time_end" = case_when(
+  `Juv Transect`=="A" ~ `A Time End`)) %>% select(-c(9:12)) # its acually just renaming but i was lazy and copy paste from before
+
+
+knolls<-knolls %>% group_by(trans_ID,Trans_type) %>% 
+  mutate(Depth_juv = mean(c(as.numeric(Juv_depth_start),as.numeric(Juv_depth_end)),na.rm = T)) %>% ungroup() %>% select(-Juv_depth_start,-Juv_depth_end)
+
+
+knolls$meta_to_deployment_id<-NULL
+knolls$Trans_No<- NULL
+
+knolls <- knolls %>% rename("juv_sub_transect"= `Juv Transect`)
+
+
+
+which(!colnames(knolls) %in% colnames(Full_data))
+
+which(!colnames(Full_data) %in% colnames(knolls))
+
+missing_col<-colnames(Full_data)[which(!colnames(Full_data) %in% colnames(knolls))]
+
+knolls <-cbind(knolls, setNames( lapply(missing_col, function(x) x=NA), missing_col))
+
+knolls<- knolls %>% select(colnames(Full_data))
+
+```
+
+
+
+```{r}
+Full_data<- bind_rows(Full_data,knolls)
+```
+
+
+check for missing coordinates,
+in cryptic there is no coordinates yet so ill check for J or T
 
 
 ```{r}
@@ -587,9 +760,13 @@ Full_data$lon[Full_data$trans_ID =="reserve 18 Shira Salingre Shahar Chaikin dec
 Full_data$Depth[Full_data$trans_ID=="Princess 1 A Tal Perevolotsky Yamit Romano october 2020"]<-16
 
 
+Full_data$lat[Full_data$trans_ID =="Princess 4 A 2022-08-14 Mai Lazarus Blank Mai Lazarus Blank"] <-29.494216
+Full_data$lon[Full_data$trans_ID =="Princess 4 A 2022-08-14 Mai Lazarus Blank Mai Lazarus Blank"] <-34.906752
+
+
+
 coord_check<-Full_data %>% filter(Trans_type != "C",is.na(lat)) %>% distinct(trans_ID,.keep_all = T)
 
-rm(coord_check)
 
 
 
@@ -689,7 +866,7 @@ compare to the traits data:
 
 traits<- read.csv("data\\Belmaker_Species_Traits.csv")
 
-traits<-traits %>% filter(Red_Sea == 1)
+traits<-traits %>% dplyr::filter(Red_Sea == 1)
 
 worng_dis<-v_names[which(!v_names%in%traits$Species_updated_name_fishbase)]
 
