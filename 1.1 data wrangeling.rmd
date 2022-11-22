@@ -772,6 +772,45 @@ coord_check<-Full_data %>% filter(Trans_type != "C",is.na(lat)) %>% distinct(tra
 
 ```
 
+add lat,lon and depth to knolls
+
+
+
+```{r}
+
+load("data/knoll_mdata.RData")
+
+knoll_mdata <- knoll_mdata %>% filter(storm == "After") %>%
+  select(Site,Knoll,Max_depth,DD_X,DD_Y) %>% 
+  mutate(knoll_id = paste(Site,Knoll,sep = "_"))
+
+knoll_mdata<-knoll_mdata %>%
+  filter(knoll_id %in% c("Katza_11","Katza_12","Katza_14","Katza_15","Katza_16","Katza_9",
+                         "Princess_1","Princess_2"))
+
+colnames(knoll_mdata)<-c("Site_name","Sub_site","Depth.x","lat.x","lon.x","knoll_id" )
+
+knoll_mdata$survey_method<-"Knolls"
+
+knoll_mdata$Sub_site<-as.character(knoll_mdata$Sub_site)
+knoll_mdata$lat.x<-as.character(knoll_mdata$lat.x)
+knoll_mdata$lon.x<-as.character(knoll_mdata$lon.x)
+
+Full_data<-left_join(Full_data,knoll_mdata)
+
+Full_data<- Full_data %>% mutate(Depth = coalesce(Depth, Depth.x),
+                       lat = coalesce(lat,lat.x),
+                       lon = coalesce(lon,lon.x))
+
+Full_data<-Full_data %>% select(-c(lat.x,lon.x,Depth.x,knoll_id))
+
+coord_check<-Full_data %>% filter(Trans_type != "C",is.na(lat)) %>% distinct(trans_ID,.keep_all = T)
+
+
+```
+
+
+
 Make the coordinates,depth,and other variables to extent from T to C in the same transect
 
 
@@ -925,6 +964,7 @@ remove the observations of "Cantherhines dumerilii" and "Siphamia majimai" that 
 ```{r}
 Full_data<-Full_data %>% filter(Species != "Cantherhines dumerilii",Species != "Siphamia majimai")
 
+
 rm(list=ls()[! ls() %in% c("Full_data","traits")])
 
 ```
@@ -934,6 +974,58 @@ rm(list=ls()[! ls() %in% c("Full_data","traits")])
 ```{r}
 #save(Full_data,file ="Full_data.RData")
 #write.csv(Full_data,"Full_data.csv")
+
+```
+
+# part 2: traits
+
+
+```{r}
+
+#load("Full_data.RData")
+
+ab_eilat<-read_csv("data/ab_eilat.csv")
+
+```
+
+
+
+```{r}
+
+
+Species <- Full_data %>% distinct(Species)
+
+
+weight <- length_weight(Species$Species,fields = c("Species", "Type","Sex","a","b"))
+
+
+weight_filter<-weight %>% filter(Type=="TL")
+
+
+weight_filter<-weight_filter %>% group_by(Species) %>% summarise(a = mean(a),
+                                                              b = mean(b),
+                                                              convertion_method = rep("mean"))
+
+
+Species<-left_join(Species,weight_filter)
+
+
+
+```
+
+
+```{r}
+ab_eilat$Species<- gsub(".", " ",ab_eilat$Species,fixed=TRUE)
+
+ab_eilat$coeff_a<-as.numeric(ab_eilat$coeff_a)
+
+
+Species<-left_join(Species,ab_eilat)
+
+
+Species <- Species %>% mutate(a =coalesce(a,coeff_a),
+                              b = coalesce(b,coeff_b),
+                              convertion_method = coalesce(convertion_method,note))         
 
 ```
 
