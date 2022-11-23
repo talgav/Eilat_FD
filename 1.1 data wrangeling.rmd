@@ -918,11 +918,16 @@ wn<-traits %>% filter(Species_used_name %in% worng_dis) %>% select(1:3) %>% rena
 ```{r}
 
 uniqe_sp <- left_join(uniqe_sp,wn)
+
    
 uniqe_sp_2 <- uniqe_sp %>%
-  mutate("Species" = coalesce(Species_updated_name_fishbase,v_names)) %>% 
-  mutate("Species" = coalesce(Species_updated_name_fishbase,uniqe_sp))
+  mutate("Species_1" = coalesce(Species_updated_name_fishbase,v_names))
 
+uniqe_sp_2 <- uniqe_sp_2 %>% 
+  mutate("Species_2" = coalesce(Species_1,uniqe_sp))
+  
+  
+  
 worng_dis[which(!worng_dis %in% wn$uniqe_sp)]
 
 
@@ -934,9 +939,9 @@ Zebrasoma veliferum
 fix the last missfits mannualy
 
 ```{r}
-uniqe_sp_2$Species[uniqe_sp_2$uniqe_sp=="Zebrasoma veliferum"]<-"Zebrasoma desjardinii"
+uniqe_sp_2$Species_2[uniqe_sp_2$uniqe_sp=="Zebrasoma veliferum"]<-"Zebrasoma desjardinii"
 
-uniqe_sp_2<-uniqe_sp_2 %>% select(1,5)
+uniqe_sp_2<-uniqe_sp_2 %>% select(1,6)
 
 colnames(uniqe_sp_2)<-c("Species","validate_species")
 
@@ -977,8 +982,14 @@ rm(list=ls()[! ls() %in% c("Full_data","traits")])
 
 ```
 
-# part 2: traits
+# part 2: traits and size coeff
 
+in this very messy piace of script I added a and b coeff from few different sorces:
+
+1. straight from fish base
+2. Bayesian estimate from the transect data of 2018-2021, from file named `ab_eilat` 
+3. from the EcoCamp data (need to ass the method or change it later on since i done weird stuff there...)
+4. manually fill Bayesian estimate from fishbase to all the missing species
 
 ```{r}
 
@@ -1025,9 +1036,87 @@ Species<-left_join(Species,ab_eilat)
 
 Species <- Species %>% mutate(a =coalesce(a,coeff_a),
                               b = coalesce(b,coeff_b),
-                              convertion_method = coalesce(convertion_method,note))         
+                              convertion_method = coalesce(convertion_method,note))   
+
+load("data/fish_full_data_ecocamp.RData")
+
+eco_ab <- fish_full_data %>% distinct(Species,.keep_all = T) %>% select(Species,Family,a,b)
+
+colnames(eco_ab)<- c("Species","Family","a_eco","b_eco")
+
+Species<-left_join(Species,eco_ab)
+
+Species <- Species %>% mutate(a =coalesce(a,a_eco),
+                              b = coalesce(b,b_eco)) 
+
+Species_no_ab <-  Species %>% filter(is.na(a)) %>% select(1:4)
+
+#write.csv(Species_no_ab,"Species_no_ab.csv")
+
+Species_manual_ab<-read.csv("data/Species_manual_ab.csv")
+
+Species<-left_join(Species,Species_manual_ab)
+
+Species <- Species %>% mutate(a =coalesce(a,a.manu),
+                              b = coalesce(b,b.manu),
+                              convertion_method = coalesce(convertion_method,convertion_method_manu))
+
+
+Species<-Species %>% select(1:4)
+
+
+Full_data<-left_join(Full_data,Species)
+
+
+
+```
+```{r}
+
+rm(list=setdiff(ls(), "Full_data"))
+
+```
+
+set the column class right
+
+
+```{r}
+
+str(Full_data)
+
+Full_data$Sub_site<-as.numeric(Full_data$Sub_site)
+Full_data$Amount<-as.numeric(Full_data$Amount)
+Full_data$Length<-as.numeric(Full_data$Length)
+Full_data$year<-as.numeric(Full_data$year)
+Full_data$lat<-as.numeric(Full_data$lat)
+Full_data$lon<-as.numeric(Full_data$lon)
+Full_data$Confidence<-as.numeric(Full_data$Confidence)
+
+```
+
+fix this mistake - all the species are in confidance 1 which is probably a mistake
+
+```{r}
+Full_data$Confidence[Full_data$trans_ID=="iui 1 Shira Salingre Shahar Chaikin december 2019"]<-0
+
+```
+
+
+Understand for which surveys i dont have both transient and cryptic data
+
+
+```{r}
+a<-Full_data %>% distinct(trans_ID,Trans_type)
+
+a<-a %>% group_by(trans_ID) %>% mutate(n=n())
+
 
 ```
 
 
 
+
+```{r}
+#save(Full_data,file ="Full_data.RData")
+#write.csv(Full_data,"Full_data.csv")
+
+```

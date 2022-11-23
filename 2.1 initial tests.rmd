@@ -48,4 +48,80 @@ leaflet(map_data) %>%
 ```
 
 
+filter new surveyors data
+
+```{r}
+unique(Adult_data$observer)
+
+
+Adult_data<-Adult_data %>% filter(observer != "Hava Wandel")
+Adult_data<-Adult_data %>% filter(observer != "Avery Deveto")
+Adult_data<-Adult_data %>% filter(!(observer == "Sarah Ohayon" & Site_name =="Migdalor"))
+
+length(unique(Adult_data$trans_ID))
+
+```
+
+choose one observer randomly
+
+
+```{r}
+one_observer<-list()
+set.seed(1)
+
+for (i in unique(Adult_data$trans_ID)) {
+  
+  data <- Adult_data %>% filter(trans_ID == i)
+  
+  obs_amount <- length(unique(data$observer))
+  obs_name <- unique(data$observer)
+  chosen_obs <- sample(obs_name,1)  
+ 
+  filter_data<-data %>% filter(observer == chosen_obs)
+  one_observer[[i]]<-filter_data
+  
+  
+}
+
+one_observer <- bind_rows(one_observer)
+
+length(unique(one_observer$trans_ID))
+
+rm(data,filter_data)
+
+```
+
+
+# define my working data
+
+```{r}
+clean_adults<-one_observer
+#save(clean_adults,file ="clean_adults.RData")
+#write.csv(clean_adults,"clean_adults.csv")
+
+```
+
+# richness and abundance maps map
+
+
+```{r}
+
+clean_adults<-clean_adults %>% filter(Trans_type == "T") %>% filter(Confidence < 1)
+
+length(unique(clean_adults$trans_ID))
+
+species_richness <- clean_adults %>% group_by(trans_ID) %>% mutate(species_richness = n_distinct(Species))
+
+species_richness$species_richness<-ifelse(species_richness$Species == "No Fish",0,species_richness$species_richness)
+
+species_richness<-species_richness %>% distinct(trans_ID,.keep_all = T) %>% select(1:14,species_richness)
+
+no_fish_transect <- unique(one_observer$trans_ID[which(!one_observer$trans_ID %in% clean_adults$trans_ID)])
+
+
+
+
+
+```
+
 
