@@ -9,15 +9,27 @@ output:
 ---
 
 ```{r}
+
 library(tidyverse)
 library(lubridate)
 library(sf)
 library(leaflet)
+library(RColorBrewer)
+library(stringr)
+library(biogeo)
+library(ggmap)
+library(geosphere)
+library(plotly)
+library(TSP)
+library(rgdal)
+library(raster)
 
 ```
 
 ```{r}
 load("Full_data.RData")
+
+
 
 ```
 
@@ -27,7 +39,7 @@ First lets create filtered data
 
 ```{r}
 
-Adult_data<- Full_data %>% filter(Trans_type!= "J", survey_method == "Transects") %>% select(-juv_sub_transect,-observer_num_juv,-survey_method)
+Adult_data<- Full_data %>% filter(Trans_type!= "J", survey_method == "Transects") %>% dplyr::select(-juv_sub_transect,-observer_num_juv,-survey_method)
 
 ```
 
@@ -55,9 +67,18 @@ unique(Adult_data$observer)
 
 
 Adult_data<-Adult_data %>% filter(observer != "Hava Wandel")
-Adult_data<-Adult_data %>% filter(observer != "Avery Deveto")
-Adult_data<-Adult_data %>% filter(!(observer == "Sarah Ohayon" & Site_name =="Migdalor"))
+Adult_data<-Adult_data %>% filter(observer != "Avery Deveto") 
+#for some reason their observation for transient species are not in the data!! need to be solved but ion the meantime...
 
+
+```
+for some reason their observation for transient species are not in the data!! need to be solved but ion the meantime ill just keep the other observer...
+
+```{r}
+
+Adult_data<-Adult_data %>% filter(!(observer == "Sarah Ohayon" & Site_name =="Migdalor"))
+Adult_data<-Adult_data %>% filter(!(observer == "Sarah Ohayon" & Site_name =="Caves"))
+Adult_data<-Adult_data %>% filter(!(observer == "Shevy Rothman" & Site_name =="Tour Yam"))
 length(unique(Adult_data$trans_ID))
 
 ```
@@ -101,7 +122,7 @@ clean_adults<-one_observer
 
 ```
 
-# richness and abundance maps map
+# richness map
 
 
 ```{r}
@@ -114,14 +135,160 @@ species_richness <- clean_adults %>% group_by(trans_ID) %>% mutate(species_richn
 
 species_richness$species_richness<-ifelse(species_richness$Species == "No Fish",0,species_richness$species_richness)
 
-species_richness<-species_richness %>% distinct(trans_ID,.keep_all = T) %>% select(1:14,species_richness)
+species_richness<-species_richness %>% distinct(trans_ID,.keep_all = T) %>% dplyr::select(1:14,species_richness)
 
+
+```
+
+Add all the transect where there were fish but the confidence >0 and there for are now "empty" - maybe i should consider changing sp richness to 1 in those cases...
+
+```{r}
 no_fish_transect <- unique(one_observer$trans_ID[which(!one_observer$trans_ID %in% clean_adults$trans_ID)])
 
+no_fish <- one_observer %>% filter(trans_ID %in% no_fish_transect) %>% filter(Trans_type == "T") %>% distinct(trans_ID,.keep_all = T) %>% dplyr::select(1:14) %>% mutate(species_richness = 0)
 
+noy_and_shahar<-one_observer %>% filter(trans_ID== "North Beach 2 B Shahar Chaikin Noy Shapira june 2020")
+
+noy_and_shahar$Trans_type<-"T"
+
+noy_and_shahar<-noy_and_shahar%>% dplyr::select(1:14) %>% mutate(species_richness = 0) # NO TRANSIENT DATA FOR SOME REASON (NO FISH THOGH)
+```
+
+unite the empty transects
+
+
+```{r}
+
+species_richness<-rbind(species_richness,no_fish)
+species_richness<-rbind(species_richness,noy_and_shahar)
+
+```
+
+
+Static map
+
+```{r}
+backround_map = get_stamenmap(bbox = c(left =  34.900327,
+                                       bottom = 29.490269,
+                                       right = 34.983173,
+                                       top = 29.554693),
+                              zoom = 13,
+                              maptype ="terrain-background")
+
+backround_map<-ggmap(backround_map)
+
+species_richness$lat<-as.numeric(species_richness$lat)
+species_richness$lon<-as.numeric(species_richness$lon)
+
+backround_map +
+  geom_point(data = species_richness, aes(x = lon, y = lat, color = species_richness),alpha = 0.6,size = 2)+
+   scale_color_gradient(low = "yellow", high = "red", na.value = NA)
+```
+
+Leaflet map
+
+```{r}
+
+color_pal<- colorNumeric(palette = "YlOrRd", domain = species_richness$species_richness,alpha = 0.8)
+
+leaflet(species_richness) %>% 
+  addTiles() %>% 
+  addCircles(lng=~lon,lat=~lat,radius = 25,color = ~color_pal(species_richness),
+    stroke = FALSE, fillOpacity = 0.8)
+
+```
+heatmap
+
+
+```{r}
+backround_map + stat_density2d(data=species_richness,
+ aes(x=lon, y=lat, fill=..level..),alpha = 0.3, geom="polygon")+ 
+  scale_fill_gradientn(colours=rev(brewer.pal(7, "Spectral")))
+```
+
+
+adu code
+
+```{r}
+#load libraries
+
+
+
+#list work directories
+
+wd_israel <- 'G:/My Drive/PHD/chapter 2  functional diversity/Eilat_FD/ISR_adm'
+
+
+#load israeli map
+
+israel <- readOGR('ISR_adm1', dsn = wd_israel)
+
+#crop south
+
+isr <- crop(israel, extent(34.26801, 35.90094, 29.49708, 29.57))
+
+plot(isr, col = 'khaki1', bg = 'lightblue')
+
+#load species richness
+
+setwd(wd_sps_rich)
+
+#species_richness <- readRDS('')
+
+species_richness
+
+#create spatialPointDataFrame
+
+sps_rich_sp <- species_richness
+
+sps_rich_sp <- sps_rich_sp[-which(is.na(sps_rich_sp$lon)),]
+
+coordinates(sps_rich_sp) <- ~lon+lat
+
+#plot points
+
+plot(isr)
+plot(sps_rich_sp, col = "magenta", cex = 0.5, pch = 19, add=T)
+
+
+###################
+
+#create empty raster
+
+r_eilat <- raster(xmn = 34.86, xmx = 34.98, ymn = 29.48, ymx = 29.57, #extent
+                  res = 0.0004, val = 0)
+
+
+#create ID raster
+
+ID_raster <- r_eilat
+ID_raster[] <- c(1:length(ID_raster))
+
+#create land raster
+land_raster <- mask(ID_raster, isr) #crop ID raster by shp 
+land_raster[!is.na(land_raster[])] <- 9999
+land_raster[is.na(land_raster[])] <- 0
+land_raster[which(land_raster[] == 9999)] <- NA
+
+#identify observation site cells
+pts_IDs <- extract(ID_raster, sps_rich_sp)
+rich_ID <- as.data.frame(cbind(sps_rich_sp@data, raster_ID = pts_IDs))
+
+#group
+
+rich_ID<- rich_ID %>% group_by(raster_ID) %>% summarise("mean_rich" = mean(species_richness))
+
+rich_ID2 <- as.data.frame(rich_ID)
+
+#include values in raster
+
+land_raster[rich_ID$raster_ID] <- rich_ID$mean_rich
+
+plot(land_raster)
 
 
 
 ```
 
+# Abundance map
 

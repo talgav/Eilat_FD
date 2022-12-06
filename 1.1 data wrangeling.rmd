@@ -538,7 +538,7 @@ Full_data$line<-NULL
 Full_data<-Full_data %>% rename('juv_sub_transect'=`Juv Transect`)
 Full_data<-Full_data %>% arrange(desc(Date),Site_name)
 
-rm(list=setdiff(ls(), "Full_data"))
+rm(list=ls()[! ls() %in% c("Full_data","traits")])
 ```
 
 
@@ -1072,7 +1072,7 @@ Full_data<-left_join(Full_data,Species)
 ```
 ```{r}
 
-rm(list=setdiff(ls(), "Full_data"))
+rm(list=ls()[! ls() %in% c("Full_data","traits")])
 
 ```
 
@@ -1112,11 +1112,60 @@ a<-a %>% group_by(trans_ID) %>% mutate(n=n())
 
 ```
 
+# add traits data:
+
+```{r}
+
+#load("Full_data.RData")
+
+```
+
+
+Ive got few files sources that i need to check and understand if they overlap in species/traits ect.
+
+```{r}
+traits_avery<-read.csv("data/traits_for_tal.csv")
+
+my_species<-Full_data %>% distinct(Species)
+
+traits_avery<-traits_avery %>% rename("Species"="species_fishbase_name")
+
+my_species<-left_join(my_species,traits_avery)
+
+trait_matrix<-my_species %>% select(Species,order,family,genus,
+                                    home_range,activity,schooling,diet,water_level)
+
+  
+  
+```
+
+
+```{r}
+
+Final_traits<-read.csv("data/Final_traits.csv")
+
+Final_traits$Name<-str_to_sentence(Final_traits$Name)
+size_traits<-Final_traits %>% select(Name,Size.FishBase,Size_type,Size.Class)
+size_traits<-size_traits %>% rename("Species"="Name")
+
+trait_matrix<-left_join(trait_matrix,size_traits)
+
+trait_matrix %>%
+  summarise_all(funs(sum(is.na(.))))
+
+
+
+
+
+```
+
 
 
 
 ```{r}
 #save(Full_data,file ="Full_data.RData")
 #write.csv(Full_data,"Full_data.csv")
+#save(trait_matrix,file ="trait_matrix.RData")
+#write.csv(trait_matrix,"trait_matrix.csv")
 
 ```

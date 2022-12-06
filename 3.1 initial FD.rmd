@@ -1,0 +1,51 @@
+---
+title: "3.1 initial FD"
+author: "TG"
+date: "2022-12-06"
+output:
+   prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+---
+
+```{r}
+library(tidyverse)
+library(FD)
+
+```
+
+```{r}
+
+load("trait_matrix.RData")
+load("clean_adults.RData")
+
+```
+
+```{r}
+clean_adults$Amount<-as.numeric(clean_adults$Amount)
+
+
+clean_adults<-clean_adults %>% filter(Species != "No Fish") %>% filter(Amount != "0")
+
+
+
+s<-unique(clean_adults$Species)
+
+sp_matrix <- clean_adults %>% select(1:18) %>% group_by(across(1:17)) %>% summarise("n" = sum(Amount))
+
+sp_matrix<-spread(sp_matrix,"Species","n",fill = 0)
+
+only_sp<-sp_matrix[,17:ncol(sp_matrix)]
+
+traits <- trait_matrix %>% filter(Species %in% s) %>% arrange(Species) %>% select(-c(2:4),-10,-11)%>% remove_rownames %>% column_to_rownames(var="Species")
+
+
+```
+
+
+
+
+```{r}
+example <- dbFD(traits, a =  only_sp, corr = "lingoes") 
+```
+
